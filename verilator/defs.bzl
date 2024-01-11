@@ -64,6 +64,7 @@ def cc_compile_and_link_static_library(ctx, srcs, hdrs, deps, runfiles, includes
         linking_contexts = linking_contexts,
         name = ctx.label.name,
         disallow_dynamic_library = True,
+        alwayslink = ctx.attr.alwayslink,
     )
 
     output_files = []
@@ -207,6 +208,10 @@ verilator_cc_library = rule(
         "copts": attr.string_list(
             doc = "List of additional compilation flags",
             default = [],
+        ),
+        "alwayslink": attr.bool(
+            doc = "Whether this library should always be linked.",
+            default = False,
         ),
         "_cc_toolchain": attr.label(
             doc = "CC compiler.",
