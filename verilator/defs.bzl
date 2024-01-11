@@ -107,9 +107,9 @@ def _copy_tree(ctx, idirs, odir, map_each = None, progress_message = None):
     args = ctx.actions.args()
     args.add(odir.path)
     args.add_all(idirs, map_each = map_each)
-    ctx.actions.run(
-        arguments = ["--parents", "-t", args],
-        executable = "/usr/bin/cp",
+    ctx.actions.run_shell(
+        arguments = [args],
+        command = _COPY_TREE_SH,
         inputs = idirs,
         outputs = [odir],
         progress_message = progress_message,
@@ -132,9 +132,8 @@ def _verilator_cc_library(ctx):
             verilog_files.append(file)
 
     verilator_output = ctx.actions.declare_directory(ctx.label.name + "-gen")
-    verilator_output_cpp = ctx.actions.declare_directory(ctx.label.name + ".cpp")
-    verilator_output_hpp = ctx.actions.declare_directory(ctx.label.name + ".h")
-    verilated_output_hpp = ctx.actions.declare_directory(ctx.label.name + "-verilated")
+    verilator_output_cpp = ctx.actions.declare_directory(ctx.label.name + "-cpp")
+    verilator_output_hpp = ctx.actions.declare_directory("include")
 
     prefix = "V" + ctx.attr.module_top
 
@@ -165,13 +164,6 @@ def _verilator_cc_library(ctx):
 
     _copy_tree(
         ctx,
-        verilated_hpp,
-        verilated_output_hpp,
-        map_each = _only_hpp,
-        progress_message = "[Verilator] Extracting C++ verilated header files",
-    )
-    _copy_tree(
-        ctx,
         [verilator_output],
         verilator_output_cpp,
         map_each = _only_cpp,
@@ -179,7 +171,7 @@ def _verilator_cc_library(ctx):
     )
     _copy_tree(
         ctx,
-        [verilator_output],
+        [verilator_output] + verilated_hpp,
         verilator_output_hpp,
         map_each = _only_hpp,
         progress_message = "[Verilator] Extracting C++ header files",
@@ -199,7 +191,7 @@ def _verilator_cc_library(ctx):
         deps = deps,
     )
     return [
-        DefaultInfo(files = depset([verilator_output_hpp, verilated_output_hpp], transitive = [default.files])),
+        DefaultInfo(files = depset([verilator_output_hpp], transitive = [default.files])),
         cc,
     ]
 
