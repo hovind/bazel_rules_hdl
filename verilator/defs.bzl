@@ -107,9 +107,9 @@ def _copy_tree(ctx, idir, odir, map_each = None, progress_message = None):
     args = ctx.actions.args()
     args.add(odir.path)
     args.add_all([idir], map_each = map_each)
-    ctx.actions.run_shell(
-        arguments = [args],
-        command = _COPY_TREE_SH,
+    ctx.actions.run(
+        arguments = ["--parents", "-t", args],
+        executable = "/usr/bin/cp",
         inputs = [idir],
         outputs = [odir],
         progress_message = progress_message,
@@ -171,6 +171,14 @@ def _verilator_cc_library(ctx):
         map_each = _only_hpp,
         progress_message = "[Verilator] Extracting C++ header files",
     )
+    # for header in ctx.attr._verilator_lib[CcInfo].compilation_context.direct_public_headers.to_list():
+    #     _copy_tree(
+    #         ctx,
+    #         header,
+    #         verilator_output_hpp,
+    #         map_each = _only_hpp,
+    #         progress_message = "[Verilator] Extracting C++ verilated header files",
+    #     )
 
     # Do actual compile
     defines = ["VM_TRACE"] if ctx.attr.trace else []
@@ -186,7 +194,7 @@ def _verilator_cc_library(ctx):
         deps = deps,
     )
     return [
-        DefaultInfo(files = depset([ verilator_output_hpp ], transitive = [default.files])),
+        DefaultInfo(files = depset([verilator_output_hpp], transitive = [default.files])),
         cc,
     ]
 
