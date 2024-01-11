@@ -102,15 +102,15 @@ _COPY_TREE_SH = """
 OUT=$1; shift && mkdir -p "$OUT" && cp $* "$OUT"
 """
 
-def _copy_tree(ctx, idir, odir, map_each = None, progress_message = None):
+def _copy_tree(ctx, idirs, odir, map_each = None, progress_message = None):
     """Copy files from a TreeArtifact to a new directory"""
     args = ctx.actions.args()
     args.add(odir.path)
-    args.add_all([idir], map_each = map_each)
+    args.add_all(idirs, map_each = map_each)
     ctx.actions.run(
         arguments = ["--parents", "-t", args],
         executable = "/usr/bin/cp",
-        inputs = [idir],
+        inputs = idirs,
         outputs = [odir],
         progress_message = progress_message,
     )
@@ -134,6 +134,7 @@ def _verilator_cc_library(ctx):
     verilator_output = ctx.actions.declare_directory(ctx.label.name + "-gen")
     verilator_output_cpp = ctx.actions.declare_directory(ctx.label.name + ".cpp")
     verilator_output_hpp = ctx.actions.declare_directory(ctx.label.name + ".h")
+    verilated_output_hpp = ctx.actions.declare_directory(ctx.label.name + "-verilated")
 
     prefix = "V" + ctx.attr.module_top
 
@@ -157,28 +158,32 @@ def _verilator_cc_library(ctx):
         progress_message = "[Verilator] Compiling {}".format(ctx.label),
     )
 
+    verilated_hpp = []
+    for header in ctx.attr._verilator_lib[CcInfo].compilation_context.direct_public_headers:
+        if not header.is_source and not header.is_directory:
+            verilated_hpp.append(header)
+
     _copy_tree(
         ctx,
-        verilator_output,
+        verilated_hpp,
+        verilated_output_hpp,
+        map_each = _only_hpp,
+        progress_message = "[Verilator] Extracting C++ verilated header files",
+    )
+    _copy_tree(
+        ctx,
+        [verilator_output],
         verilator_output_cpp,
         map_each = _only_cpp,
         progress_message = "[Verilator] Extracting C++ source files",
     )
     _copy_tree(
         ctx,
-        verilator_output,
+        [verilator_output],
         verilator_output_hpp,
         map_each = _only_hpp,
         progress_message = "[Verilator] Extracting C++ header files",
     )
-    # for header in ctx.attr._verilator_lib[CcInfo].compilation_context.direct_public_headers.to_list():
-    #     _copy_tree(
-    #         ctx,
-    #         header,
-    #         verilator_output_hpp,
-    #         map_each = _only_hpp,
-    #         progress_message = "[Verilator] Extracting C++ verilated header files",
-    #     )
 
     # Do actual compile
     defines = ["VM_TRACE"] if ctx.attr.trace else []
@@ -194,7 +199,7 @@ def _verilator_cc_library(ctx):
         deps = deps,
     )
     return [
-        DefaultInfo(files = depset([verilator_output_hpp], transitive = [default.files])),
+        DefaultInfo(files = depset([verilator_output_hpp, verilated_output_hpp], transitive = [default.files])),
         cc,
     ]
 
