@@ -193,7 +193,10 @@ verilator_bisonpre(
 
 cc_library(
     name = "verilatedos",
-    hdrs = ["include/verilatedos.h"],
+    hdrs = [
+        "include/verilatedos.h",
+        "include/verilatedos_c.h",
+    ],
     strip_include_prefix = "include/",
 )
 
@@ -311,6 +314,7 @@ cc_library(
         "include/verilated_vpi.h",
         "include/verilated.h",
         "include/verilatedos.h",
+        "include/verilatedos_c.h",
     ],
     # TODO: Remove these once upstream fixes these warnings
     copts = [
