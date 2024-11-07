@@ -40,6 +40,16 @@ verilator_version(
     changelog = "Changes",
 )
 
+filegroup(
+    name = "includes",
+    srcs = glob([
+        "include/*.h",
+        "include/*.mk",
+        "include/*.sv",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
 verilator_build_template(
     name = "config_package",
     out = "src/config_package.h",
