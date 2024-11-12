@@ -286,6 +286,7 @@ cc_library(
         "include/gtkwave/lz4.h",
         "include/gtkwave/wavealloca.h",
         "include/verilated.cpp",
+        "include/verilated_dpi.cpp",
         "include/verilated_fst_c.cpp",
         "include/verilated_imp.h",
         "include/verilated_syms.h",
@@ -328,6 +329,7 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        ":svdpi",
         "@net_zlib//:zlib",
     ],
 )
