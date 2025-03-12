@@ -224,6 +224,7 @@ def _synthesize_design_impl(ctx):
                 label = ctx.label,
                 srcs = [output_file],
                 hdrs = [],
+                includes = [],
                 data = [],
                 deps = [],
                 tags = [],
