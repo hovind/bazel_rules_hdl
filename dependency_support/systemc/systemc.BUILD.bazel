@@ -1,0 +1,23 @@
+cc_library(
+    name = "systemc",
+    srcs = glob(
+               ["src/**/*.cpp"],
+               exclude = ["src/sysc/packages/qt/**"],
+           ) +
+           [
+               "src/sysc/packages/qt/qt.c",
+               "src/sysc/packages/qt/md/iX86_64.s",
+           ],
+    hdrs = glob([
+        "src/**/*.h",
+        "src/systemc",
+        "src/tlm",
+    ]),
+    cxxopts = ["-std=c++23"],
+    strip_include_prefix = "src",
+    local_defines = [
+        "SC_BUILD",
+        "SC_INCLUDE_FX",
+    ],
+    visibility = ["//visibility:public"],
+)

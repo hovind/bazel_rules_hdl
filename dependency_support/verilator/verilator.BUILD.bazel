@@ -281,6 +281,24 @@ cc_library(
 )
 
 cc_library(
+    name = "systemc",
+    hdrs = [
+        "include/verilated_fst_sc.cpp",
+        "include/verilated_fst_sc.h",
+        "include/verilated_sc.h",
+        "include/verilated_vcd_sc.cpp",
+        "include/verilated_vcd_sc.h",
+        "include/verilated_sc_trace.h",
+    ],
+    cxxopts = ["-std=c++23"],
+    strip_include_prefix = "include",
+    deps = [
+        "@systemc//:systemc",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "verilator",
     srcs = [
         "include/gtkwave/fastlz.h",
@@ -302,7 +320,6 @@ cc_library(
         "include/verilated_fst_c.h",
         "include/verilated_funcs.h",
         "include/verilated_intrinsics.h",
-        "include/verilated_sc.h",
         "include/verilated_sym_props.h",
         "include/verilated_threads.h",
         "include/verilated_timing.h",
